@@ -1,0 +1,13 @@
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "http://localhost:5000/api", // your Express backend
+});
+
+export const loginUser = (username, password) =>
+  api.post("/auth/login", { username, password });
+
+export const registerUser = (username, password) =>
+  api.post("/auth/register", { username, password });
+
+export default api;
