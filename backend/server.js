@@ -64,3 +64,49 @@ app.post('/login', async (req, res) => {
     res.status(401).send("Incorrect password");
   }
 })
+
+// Create User's Team 
+app.post('/team', async (req, res) => {
+  try {
+    const { userId, teamName, pokemonIds } = req.body;
+    
+    const newTeam = new Team({
+      userId,
+      teamName,
+      pokemon: pokemonIds
+    });
+
+    await newTeam.save();
+    res.status(201).json(newTeam);
+  } catch (err) {
+    res.status(400).send("Error creating team: " + err.message);
+  }
+});
+
+// Get User's Team
+app.get('/team/get/:userId', async (req, res) => {
+  try {
+
+    const teams = await Team.find({ userId: req.params.userId }).populate('pokemon');
+    res.json(teams);
+
+  } catch (err) {
+    res.status(500).send("Error fetching teams");
+  }
+});
+
+// Update User's Team
+app.put('/team/update/:id', async (req, res) => {
+  try {
+    const { teamName, pokemonIds } = req.body;
+    
+    const updatedTeam = await Team.findByIdAndUpdate(
+      req.params.id, 
+      { teamName, pokemon: pokemonIds },
+      { new: true }
+    );
+    res.json(updatedTeam);
+  } catch (err) {
+    res.status(400).send("Update failed");
+  }
+});
