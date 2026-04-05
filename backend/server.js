@@ -27,31 +27,31 @@ app.get('/api/test', (req, res) => {
 });
 
 // Register Route
-app.post('/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
   try {
     const { username, password, role } = req.body;
-
-    const newUser = new User({
-      username,
-      password,
-      role: role || 'Standard'
-    });
-
+    const newUser = new User({ username, password, role });
     await newUser.save();
-    res.status(201).send("User created successfully!");
+    res.status(201).json({ message: "User created successfully!" });
   } catch (err) { 
-    res.status(400).send("Error: Username already exists.");
+    console.error("Registration Error:", err);
+
+    // dupe username
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "Username already exists." });
+    }
+    // other errors
+    res.status(400).json({ message: err.message });
   }
-})
+});
 
 // Login Route 
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  
   const user = await User.findOne({ username });
 
   if (!user) {
-    return res.status(404).send("User not found");
+    return res.status(404).json({ message: "User not found" }); // CHANGE to .json
   }
 
   if (user.password === password) { 
@@ -61,9 +61,10 @@ app.post('/login', async (req, res) => {
       username: user.username 
     });
   } else {
-    res.status(401).send("Incorrect password");
+    // CHANGE: Use a consistent JSON format for the error
+    res.status(401).json({ message: "Incorrect password" }); 
   }
-})
+});
 
 // Create User's Team 
 app.post('/team', async (req, res) => {

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext'; 
+import { useNavigate } from 'react-router-dom'; 
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -6,17 +8,42 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('Trainer'); // either Admin or Trainer
 
-  const handleSubmit = (e) => {
+  const { login } = useAuth(); 
+  const navigate = useNavigate(); 
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (isLogin) {
-      console.log("Logging in with:", { username, password });
-     
-      // call the backend login
-    } else {
-      console.log("Registering as:", { username, password, userType });
+    const payload = isLogin 
+      ? { username, password } 
+      : { username, password, role: userType };
 
-      // call the backend registration
+    try {
+      const endpoint = isLogin ? '/api/login' : '/api/register';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (isLogin) {
+          login({ username: data.username, role: data.role }); 
+          alert(`Welcome back, ${data.username}!`);
+        } else {
+          // login automatically after register
+          login({ username: username, role: userType });
+          alert("Account created and logged in!");
+        }
+        navigate('/team'); 
+      } else {
+        alert(data.message || "Something went wrong");
+      }
+    } catch (err) {
+      console.error("Connection error:", err);
+      alert("Could not connect to the server.");
     }
   };
 
@@ -49,7 +76,7 @@ const LoginPage = () => {
           /> 
         </div>
 
-        // user selection for registration
+        {/* user selection */}
         {!isLogin && (
           <div style={{ marginBottom: '12px' }}>
             <label htmlFor="userType" style={{ display: 'block' }}>Account Type</label>
@@ -73,7 +100,8 @@ const LoginPage = () => {
       <button 
         onClick={() => setIsLogin(!isLogin)} 
         style={{ marginTop: '20px', background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
-      > //focus on design later
+      > 
+      {/*focus on design later */}
         {isLogin ? "Don't have an account? Register here" : "Do you have an account? Login here"}
       </button>
     </main>
