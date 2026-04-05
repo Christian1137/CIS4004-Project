@@ -1,20 +1,13 @@
 const mongoose = require('mongoose');
 
 const teamSchema = new mongoose.Schema({
-    
-  // Links the team to a specific user
-  userId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true 
-  },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   teamName: { type: String, default: "My Starter Team" },
-
-  // Array of Pokemon IDs 
-  pokemon: [{ 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Pokemon' 
-  }] 
+  roster: [{
+    pokemonId: { type: mongoose.Schema.Types.ObjectId, ref: 'Pokemon', required: true },
+    equippedMoves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Move' }], // The user's chosen moves
+    heldItem: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' } // The 5th entity requirement
+  }]
 });
 
 module.exports = mongoose.model('Team', teamSchema);
