@@ -102,6 +102,8 @@ app.post('/api/team', async (req, res) => {
   }
 });
 
+
+// Get User's Team
 app.get('/api/team/get/:userId', async (req, res) => {
   try {
     const teams = await Team.find({ userId: req.params.userId })
@@ -127,5 +129,58 @@ app.put('/api/team/update/:id', async (req, res) => {
     res.json(updatedTeam);
   } catch (err) {
     res.status(400).json({ message: "Update failed" });
+  }
+});
+
+// Admin Route to Add New Move
+app.post('/api/admin/moves', async (req, res) => {
+  try {
+    const newMove = new Move(req.body);
+    await newMove.save();
+    res.status(201).json(newMove);
+  } catch (err) {
+    res.status(400).json({ message: "Failed to add move" });
+  }
+});
+
+// Update an existing Move's power or element
+app.put('/api/admin/moves/:id', async (req, res) => {
+  try {
+    const updatedMove = await Move.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedMove);
+  } catch (err) {
+    res.status(400).json({ message: "Update failed" });
+  }
+});
+
+// View all registered users
+app.get('/api/admin/users', async (req, res) => {
+  const users = await User.find({}, '-password'); // Hide passwords for security
+  res.json(users);
+});
+
+// Update a User's role 
+app.put('/api/admin/users/:id/role', async (req, res) => {
+  try {
+    const { role } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id, 
+      { role }, 
+      { new: true }
+    );
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(400).json({ message: "Failed to update role" });
+  }
+});
+
+// Delete a specific User and their associated Teams
+app.delete('/api/admin/users/:id', async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    await Team.deleteMany({ userId: req.params.id }); 
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ message: "Deletion failed" });
   }
 });

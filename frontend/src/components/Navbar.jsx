@@ -18,7 +18,7 @@ export default function Navbar() {
       {user && (
         <>
           <Link to="/team" style={{ color: "white" }}>My Team</Link>
-          {user.role === "admin" && (
+          {user.role === "Administrator" && (
             <Link to="/admin" style={{ color: "white" }}>Admin</Link>
           )}
           <button onClick={handleLogout} style={{ cursor: "pointer" }}>

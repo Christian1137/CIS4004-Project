@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
   const { user } = useAuth();
 
        if (!user) return <Navigate to="/" />;
-  if (adminOnly && user.role !== "admin") return <Navigate to="/team" />;
+  if (adminOnly && user.role !== "Administrator") return <Navigate to="/team" />;
 
   return children;
 } //req for route
