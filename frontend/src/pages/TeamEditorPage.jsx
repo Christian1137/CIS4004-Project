@@ -86,7 +86,7 @@ const TeamEditorPage = () => {
 
     try {
         const formattedRoster = await Promise.all(team.map(async (p) => {
-        const res = await fetch(`http://localhost:5000/api/pokemon/${p.name}`);
+        const res = await fetch(`/api/pokemon/${p.name}`);
         const dbData = await res.json();
         const abilityId = dbData.allowedAbilities.find(a => a.name === p.selectedAbility)?._id;
         const moveIds = p.selectedMoves.map(moveName => {
@@ -101,7 +101,7 @@ const TeamEditorPage = () => {
       }));
 
       
-      const response = await fetch('http://localhost:5000/api/team', {
+      const response = await fetch('/api/team', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

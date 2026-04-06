@@ -12,12 +12,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetch('/api/admin/users')
-       .then((res) => res.json())
+      .then((res) => res.json())
       .then((data) => setUsers(data))
       .catch((err) => console.error("Could not load users:", err));
   }, []);
 
- 
+
   const handleCreateUser = async () => {
     if (!newUsername || !newPassword) {
       setCreateMessage("Please fill in both fields.");
@@ -25,7 +25,7 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch('/api/admin/users', {
+      const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: newUsername, password: newPassword, role: newRole })
@@ -56,7 +56,7 @@ export default function AdminPage() {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
       });
-//Remove the user from the local state list
+      //Remove the user from the local state list
       if (response.ok) {
         setUsers(users.filter((u) => u._id !== userId));
         setMessage(`User "${username}" deleted.`);

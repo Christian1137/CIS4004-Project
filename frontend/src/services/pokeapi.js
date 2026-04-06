@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const MY_BACKEND_API = "http://localhost:5000/api"; 
+const MY_BACKEND_API = "/api";
 
 export const getGen1Pokemon = async () => {
   try {
