@@ -1,26 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// import { useAuth } from '../context/AuthContext'; // Uncomment when your login is ready
 
 const ViewTeamPage = () => {
-  const [teamData, setTeamData] = useState(null);
+  // NEW: Store ALL teams, and track which one is currently selected
+  const [allTeams, setAllTeams] = useState([]);
+  const [activeTeamIndex, setActiveTeamIndex] = useState(0); 
+  
   const [loading, setLoading] = useState(true);
-  const [selectedMember, setSelectedMember] = useState(null); // Controls the pop-up modal
+  const [selectedMember, setSelectedMember] = useState(null); 
   
   const navigate = useNavigate();
-  // const { user } = useAuth(); // Uncomment when ready
-  
-  // testing with hardcoded user
-  const TEST_USER_ID = "69d412f57d3364cfcc48b557"; 
 
   useEffect(() => {
     const fetchTeam = async () => {
+      const loggedInUserId = localStorage.getItem('currentUserId');
+
+      if (!loggedInUserId) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await axios.get(`http://localhost:5000/api/team/get/${TEST_USER_ID}`);
+        const response = await axios.get(`http://localhost:5000/api/team/get/${loggedInUserId}`);
         
+        // NEW: Save the whole array instead of just response.data[0]
         if (response.data && response.data.length > 0) {
-          setTeamData(response.data[0]); 
+          setAllTeams(response.data); 
         }
       } catch (error) {
         console.error("Error fetching team from database:", error);
@@ -34,51 +40,82 @@ const ViewTeamPage = () => {
 
   if (loading) return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>Loading Team Data...</h2>;
   
-  if (!teamData) return (
+  // Guard clause: If the array is empty, they have no teams
+  if (allTeams.length === 0) return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h2>You don't have a team saved yet!</h2>
-      <button onClick={() => navigate('/team-build')} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>Go Draft a Team</button>
+      <h2>You don't have any teams saved yet!</h2>
+      <button onClick={() => navigate('/team-build')} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px' }}>
+        Go Draft a Team
+      </button>
     </div>
   );
 
+  const currentTeam = allTeams[activeTeamIndex];
+
   return (
     <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', boxSizing: 'border-box' }}>
+      
+      {/* select team */}
+      {allTeams.length > 1 && (
+        <div style={{ textAlign: 'center', marginBottom: '20px', backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '10px', border: '1px solid #dee2e6' }}>
+          <label htmlFor="team-select" style={{ fontWeight: 'bold', fontSize: '18px', marginRight: '15px' }}>
+            Select a Team to View:
+          </label>
+          <select 
+            id="team-select"
+            value={activeTeamIndex} 
+            onChange={(e) => setActiveTeamIndex(Number(e.target.value))}
+            style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '2px solid #007bff', cursor: 'pointer', minWidth: '250px' }}
+          >
+            {allTeams.map((team, index) => (
+              <option key={team._id} value={index}>
+                {team.teamName} ({team.roster.length} Pokémon)
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <h1 style={{ textAlign: 'center', textTransform: 'capitalize', fontSize: '36px', marginBottom: '40px' }}>
-        {teamData.teamName}
+        {currentTeam.teamName}
       </h1>
 
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px' }}>
-        {teamData.roster.map((member, index) => (
+      {/* team grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '40px', width: '100%' }}>
+        {currentTeam.roster.map((member, index) => (
           <div 
             key={index} 
             onClick={() => setSelectedMember(member)}
             style={{ 
-              border: '2px solid #007bff', 
-              borderRadius: '12px', 
-              padding: '20px', 
+              border: '3px solid #007bff', 
+              borderRadius: '20px', 
+              padding: '20px 20px', 
               backgroundColor: '#f8f9fa', 
               cursor: 'pointer', 
-              textAlign: 'center',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s'
+              textAlign: 'center', 
+              boxShadow: '0 8px 16px rgba(0,0,0,0.15)', 
+              transition: 'transform 0.2s' 
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} 
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             <img 
               src={`https://img.pokemondb.net/sprites/home/normal/${member.pokemonId.name}.png`} 
               alt={member.pokemonId.name} 
-              style={{ width: '120px', height: '120px' }} 
+              style={{ 
+                width: '200px', 
+                height: '200px', 
+                objectFit: 'contain' 
+              }} 
             />
-            <h2 style={{ textTransform: 'capitalize', margin: '10px 0 0 0' }}>{member.pokemonId.name}</h2>
-            {/* UPDATED: Darker color (#333) for better readability */}
-            <p style={{ margin: '5px 0', color: '#333', fontWeight: '500' }}>Click to view stats</p>
+            <h2 style={{ textTransform: 'capitalize', margin: '10px 0 5px 0', fontSize: '22px', color: '#000' }}>
+              {member.pokemonId.name}
+            </h2>
           </div>
         ))}
       </div>
 
-
+      {/* stats and moves popup */}
       {selectedMember && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 

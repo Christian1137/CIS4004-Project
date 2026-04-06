@@ -6,7 +6,7 @@ const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('Trainer'); // either Admin or Trainer
+  const [userType, setUserType] = useState('Trainer'); // either Administrator or Trainer
 
   const { login } = useAuth(); 
   const navigate = useNavigate(); 
@@ -19,7 +19,8 @@ const LoginPage = () => {
       : { username, password, role: userType };
 
     try {
-      const endpoint = isLogin ? '/api/login' : '/api/register';
+      // ADDED: Full localhost URL to prevent port mismatch errors
+      const endpoint = isLogin ? 'http://localhost:5000/api/login' : 'http://localhost:5000/api/register';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,12 +30,18 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // --- NEW: SAVE TO LOCAL STORAGE ---
+        // This permanently remembers the user until they log out!
+        localStorage.setItem('currentUserId', data.userId);
+        localStorage.setItem('currentUsername', data.username);
+        localStorage.setItem('currentUserRole', data.role);
+
+        // Pass the full data to your AuthContext just in case it needs it
+        login({ userId: data.userId, username: data.username, role: data.role }); 
+
         if (isLogin) {
-          login({ username: data.username, role: data.role }); 
           alert(`Welcome back, ${data.username}!`);
         } else {
-          // login automatically after register
-          login({ username: username, role: userType });
           alert("Account created and logged in!");
         }
         navigate('/team-build'); 
@@ -101,7 +108,6 @@ const LoginPage = () => {
         onClick={() => setIsLogin(!isLogin)} 
         style={{ marginTop: '20px', background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
       > 
-      {/*focus on design later */}
         {isLogin ? "Don't have an account? Register here" : "Return to Login"}
       </button>
     </main>

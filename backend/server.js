@@ -29,7 +29,13 @@ app.post('/api/register', async (req, res) => {
     const { username, password, role } = req.body;
     const newUser = new User({ username, password, role });
     await newUser.save();
-    res.status(201).json({ message: "User created successfully!" });
+    
+    res.status(201).json({ 
+      message: "User created successfully!",
+      userId: newUser._id,
+      username: newUser.username,
+      role: newUser.role
+    });
   } catch (err) { 
     console.error("Registration Error:", err);
     if (err.code === 11000) {

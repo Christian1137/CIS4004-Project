@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext'; // Uncomment when ready to link to backend
 
 const TeamEditorPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  // const { user } = useAuth(); // Uncomment to get the logged-in user ID
   
   const [team, setTeam] = useState(location.state?.draftedTeam || []);
-  const [teamName, setTeamName] = useState("My Starter Team");
+  
+  // Grab the teamName from the previous page, or default it
+  const [teamName, setTeamName] = useState(location.state?.teamName || "");
 
   if (team.length === 0) {
     return (
@@ -30,8 +30,8 @@ const TeamEditorPage = () => {
     updatedTeam[pokemonIndex].selectedAbility = abilityValue.toLowerCase();
     setTeam(updatedTeam);
   };
+
   const handleRandomizeAll = () => {
-    // warning to override moves
     const confirm = window.confirm("This will randomize abilities and moves for your entire team. Proceed?");
     if (!confirm) return;
 
@@ -59,7 +59,20 @@ const TeamEditorPage = () => {
   };
 
   const saveTeamToDatabase = async () => {
-    
+    if (!teamName || teamName.trim() === "") {
+      alert("Please enter a name for your team before saving!");
+      return; 
+    }
+
+    // get user ID
+    const loggedInUserId = localStorage.getItem('currentUserId');
+
+    if (!loggedInUserId) {
+      alert("Error: You must be logged in to save a team!");
+      return;
+    }
+
+    // moves and abilities must be filled
     const isTeamValid = team.every(p => 
       p.selectedAbility !== "" && 
       p.selectedMoves.every(m => m !== "") &&
@@ -71,41 +84,44 @@ const TeamEditorPage = () => {
       return;
     }
 
-    /* UPDATED MERN CRUD FETCH CALL
-      This is structured to exactly match your new mongoose Team schema!
-    */
-    
-    // try {
-    //   // Map the frontend 'team' state into the 'roster' format your backend expects
-    //   const formattedRoster = team.map(p => ({
-    //     pokemonId: p.id, // This is the MongoDB _id from your pokeapi.js!
-    //     // Note: Your backend expects ObjectIds for Moves and Abilities. 
-    //     // Because we currently hold string names here, you will need to look up these 
-    //     // ObjectIds by name in your Express route before saving the team.
-    //     equippedMoves: p.selectedMoves, 
-    //     chosenAbility: p.selectedAbility 
-    //   }));
-    //
-    //   const response = await fetch('http://localhost:5000/api/team', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       userId: user.userId, // Pulling from your login response
-    //       teamName: teamName,
-    //       roster: formattedRoster 
-    //     })
-    //   });
-    //   
-    //   if (response.ok) {
-    //     alert("Team successfully saved to MongoDB!");
-    //     navigate('/profile'); 
-    //   }
-    // } catch (error) {
-    //   console.error("Failed to save team", error);
-    // }
-    
-    console.log("Team ready to send to database:", { teamName, roster: team });
-    alert("Check the console to see the JSON data ready for MongoDB!");
+    try {
+        const formattedRoster = await Promise.all(team.map(async (p) => {
+        const res = await fetch(`http://localhost:5000/api/pokemon/${p.name}`);
+        const dbData = await res.json();
+        const abilityId = dbData.allowedAbilities.find(a => a.name === p.selectedAbility)?._id;
+        const moveIds = p.selectedMoves.map(moveName => {
+           return dbData.allowedMoves.find(m => m.name === moveName)?._id;
+        });
+
+        return {
+          pokemonId: p.id, 
+          chosenAbility: abilityId,
+          equippedMoves: moveIds
+        };
+      }));
+
+      
+      const response = await fetch('http://localhost:5000/api/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: loggedInUserId, 
+          teamName: teamName,
+          roster: formattedRoster 
+        })
+      });
+      
+      if (response.ok) {
+        alert("Team successfully saved to MongoDB!");
+        navigate('/view-team'); 
+      } else {
+        const errorData = await response.json();
+        alert("Failed to save: " + errorData.message);
+      }
+    } catch (error) {
+      console.error("Failed to save team", error);
+      alert("Server error while saving team.");
+    }
   };
 
   return (
@@ -124,7 +140,7 @@ const TeamEditorPage = () => {
         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
 
           <button 
-            onClick={() => navigate('/team', { state: { draftedTeam: team } })}
+            onClick={() => navigate('/team-build', { state: { draftedTeam: team, teamName: teamName } })}
             style={{ padding: '12px 25px', fontSize: '16px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             Back to Drafting
@@ -146,11 +162,12 @@ const TeamEditorPage = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+      {/* EDITOR GRID (100% Width) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '30px', width: '100%' }}>
         {team.map((pokemon, pIndex) => (
-          <div key={pIndex} style={{ border: '2px solid #007bff', borderRadius: '10px', padding: '15px', backgroundColor: '#f8f9fa', boxSizing: 'border-box' }}>
+          <div key={pIndex} style={{ border: '2px solid #007bff', borderRadius: '10px', padding: '20px', backgroundColor: '#f8f9fa', boxSizing: 'border-box' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>
-              <img src={pokemon.image} alt={pokemon.name} style={{ width: '80px', height: '80px', backgroundColor: '#fff', borderRadius: '50%', border: '1px solid #ccc' }} />
+              <img src={pokemon.image} alt={pokemon.name} style={{ width: '75px', height: '75px', backgroundColor: '#fff', borderRadius: '50%', border: '1px solid #ccc' }} />
               <h3 style={{ textTransform: 'capitalize', margin: 0 }}>{pokemon.name}</h3>
             </div>
 
@@ -178,7 +195,7 @@ const TeamEditorPage = () => {
 
             {/* moves */}
             <div>
-              <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>4 Unique Moves (Type to Search):</label>
+              <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}> Moveset :</label>
               {[0, 1, 2, 3].map((slotIndex) => {
                 const availableOptions = pokemon.availableMoves.filter(
                   move => !pokemon.selectedMoves.includes(move) || pokemon.selectedMoves[slotIndex] === move

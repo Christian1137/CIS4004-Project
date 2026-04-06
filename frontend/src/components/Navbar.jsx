@@ -9,24 +9,67 @@ export default function Navbar() {
     logout();
     navigate("/");
   };
-//simple temp with navigation bar
-  return (
-    <nav style={{ padding: "1rem", background: "#cc0000", color: "white",
-      display: "flex", gap: "1rem", alignItems: "center" }}>
-      <span style={{ fontWeight: "bold", marginRight: "auto" }}>Pokemon Team Builder</span>
 
+  return (
+    <nav style={{ 
+      padding: "1rem 2rem", 
+      background: "#cc0000", 
+      color: "white",
+      display: "flex", 
+      alignItems: "center",
+      justifyContent: "space-between", // Spreads the left and right sides
+      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+      position: "relative" // Required for the absolute centering below!
+    }}>
+      
+      {/* LEFT SIDE: App Title */}
+      <span style={{ fontWeight: "bold", fontSize: "1.2rem" }}>
+        Pokémon Team Builder
+      </span>
+
+      {/* CENTER SIDE: Perfectly centered welcome message */}
       {user && (
-        <>
-          <Link to="/team-build" style={{ color: "white" }}>Build Team</Link>
-          <Link to="/view-team" style={{ color: "white" }}>View My Team</Link>
-          {user.role === "Administrator" && (
-            <Link to="/admin" style={{ color: "white" }}>Admin</Link>
-          )}
-          <button onClick={handleLogout} style={{ cursor: "pointer" }}>
-            Logout ({user.username})
-          </button>
-        </>
+        <span style={{ 
+          position: "absolute", 
+          left: "50%", 
+          transform: "translateX(-50%)", // Pulls it back exactly halfway to center it
+          fontWeight: "bold", 
+          fontSize: "1.3rem" 
+        }}>
+          Welcome {user.username}!
+        </span>
       )}
+
+      {/* RIGHT SIDE: Navigation Links & Logout */}
+      <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+        {user && (
+          <>
+            <Link to="/team-build" style={{ color: "white", textDecoration: "none", fontWeight: "500" }}>Build Team</Link>
+            <Link to="/view-team" style={{ color: "white", textDecoration: "none", fontWeight: "500" }}>View My Team</Link>
+            
+            {user.role === "Administrator" && (
+              <Link to="/admin" style={{ color: "white", textDecoration: "none", fontWeight: "bold", background: "#ff4d4d", padding: "5px 10px", borderRadius: "5px" }}>
+                Admin
+              </Link>
+            )}
+            
+            <button 
+              onClick={handleLogout} 
+              style={{ 
+                cursor: "pointer", 
+                background: "#fff", 
+                color: "#cc0000", 
+                border: "none", 
+                padding: "8px 15px", 
+                borderRadius: "20px", 
+                fontWeight: "bold" 
+              }}
+            >
+              Logout
+            </button>
+          </>
+        )}
+      </div>
     </nav>
   );
 }
