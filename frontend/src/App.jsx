@@ -4,7 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import LoginPage from "./pages/LoginPage";
 import TeamBuilderPage from "./pages/TeamBuilderPage";
-import BattlePage from "./pages/BattlePage";
+import TeamEditorPage from "./pages/TeamEditorPage";
 import AdminPage from "./pages/AdminPage";
 
 export default function App() {
@@ -19,8 +19,8 @@ export default function App() {
             <ProtectedRoute><TeamBuilderPage /></ProtectedRoute>
           } />
 
-          <Route path="/battle" element={
-            <ProtectedRoute><BattlePage /></ProtectedRoute>
+          <Route path="/edit-team" element={
+            <ProtectedRoute><TeamEditorPage /></ProtectedRoute>
           } />
      <Route path="/admin" element={
             <ProtectedRoute adminOnly={true}><AdminPage /></ProtectedRoute>
