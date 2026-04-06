@@ -56,25 +56,23 @@ const ViewTeamPage = () => {
     <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', boxSizing: 'border-box' }}>
       
       {/* select team */}
-      {allTeams.length > 1 && (
-        <div style={{ textAlign: 'center', marginBottom: '20px', backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '10px', border: '1px solid #dee2e6' }}>
-          <label htmlFor="team-select" style={{ fontWeight: 'bold', fontSize: '18px', marginRight: '15px' }}>
-            Select a Team to View:
-          </label>
-          <select 
-            id="team-select"
-            value={activeTeamIndex} 
-            onChange={(e) => setActiveTeamIndex(Number(e.target.value))}
-            style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '2px solid #007bff', cursor: 'pointer', minWidth: '250px' }}
-          >
-            {allTeams.map((team, index) => (
-              <option key={team._id} value={index}>
-                {team.teamName} ({team.roster.length} Pokémon)
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <div style={{ textAlign: 'center', marginBottom: '20px', backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '10px', border: '1px solid #dee2e6' }}>
+        <label htmlFor="team-select" style={{ fontWeight: 'bold', fontSize: '18px', marginRight: '15px' }}>
+          Select a Team to View:
+        </label>
+        <select 
+          id="team-select"
+          value={activeTeamIndex} 
+          onChange={(e) => setActiveTeamIndex(Number(e.target.value))}
+          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '2px solid #007bff', cursor: 'pointer', minWidth: '250px' }}
+        >
+          {allTeams.map((team, index) => (
+            <option key={team._id} value={index}>
+              {team.teamName} ({team.roster.length} Pokémon)
+            </option>
+          ))}
+        </select>
+      </div>
 
       <h1 style={{ textAlign: 'center', textTransform: 'capitalize', fontSize: '36px', marginBottom: '40px' }}>
         {currentTeam.teamName}
