@@ -1,16 +1,14 @@
-import { useState } from "react";
-import { useEffect } from "react";
-
-const mockUsers = [
-  { _id: "1", username: "ashKetchum", role: "user" },
-  { _id: "2", username: "barry", role: "user" },
-  { _id: "3", username: "glacia", role: "user" },
-  { _id: "4", username: "hala", role: "admin" },
-];
+import { useState, useEffect } from "react";
 
 export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState("");
+
+  // --- Create User state ---
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newRole, setNewRole] = useState("Trainer");
+  const [createMessage, setCreateMessage] = useState("");
 
   useEffect(() => {
     fetch('/api/admin/users')
@@ -19,16 +17,41 @@ export default function AdminPage() {
       .catch((err) => console.error("Could not load users:", err));
   }, []);
 
+  // --- Create ---
+  const handleCreateUser = async () => {
+    if (!newUsername || !newPassword) {
+      setCreateMessage("Please fill in both fields.");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: newUsername, password: newPassword, role: newRole })
+      });
+
+      if (response.ok) {
+        const createdUser = await response.json();
+        setUsers([...users, createdUser]);
+        setCreateMessage(`User "${newUsername}" created successfully!`);
+        setNewUsername("");
+        setNewPassword("");
+        setNewRole("Trainer");
+      } else {
+        setCreateMessage("Failed to create user. Username may already exist.");
+      }
+    } catch (err) {
+      console.error("Create error:", err);
+      setCreateMessage("Something went wrong.");
+    }
+  };
+
+  // --- Delete ---
   const handleDelete = async (userId, username) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${username}"?`
     );
-  
-
-    //swap this out for real API cals from backend
-    // wait for the api.delete(`/users/${userId}`)
-    setUsers(users.filter((u) => u._id !== userId));
-    setMessage(`User "${username}" deleted.`);
     if (!confirmed) return;
 
     try {
@@ -37,7 +60,6 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        // Remove the user from the local state list
         setUsers(users.filter((u) => u._id !== userId));
         setMessage(`User "${username}" deleted.`);
       } else {
@@ -46,24 +68,24 @@ export default function AdminPage() {
     } catch (err) {
       console.error("Delete error:", err);
     }
-  
   };
 
+  // --- Update (toggle role) ---
   const handleRoleToggle = async (userId, currentRole) => {
     const newRole = currentRole === "Administrator" ? "Trainer" : "Administrator";
-      try {
-        const response = await fetch(`/api/admin/users/${userId}/role`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role: newRole })
-        });
-        if (response.ok) {
-          setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
-          setMessage(`Role updated to ${newRole}`);
-        }
-      } catch (err) {
-        console.error("Update failed", err);
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole })
+      });
+      if (response.ok) {
+        setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+        setMessage(`Role updated to ${newRole}`);
       }
+    } catch (err) {
+      console.error("Update failed", err);
+    }
   };
 
   return (
@@ -71,6 +93,59 @@ export default function AdminPage() {
       <h2>Admin Dashboard</h2>
       <p style={{ color: "gray" }}>Manage all registered users below.</p>
 
+      {/* CREATE USER SECTION */}
+      <div style={{
+        background: "#f9f9f9", border: "1px solid #ddd",
+        borderRadius: "8px", padding: "1.5rem", marginBottom: "2rem"
+      }}>
+        <h3 style={{ marginTop: 0 }}>Create New User</h3>
+
+        {createMessage && (
+          <div style={{
+            background: "#d4edda", color: "#155724",
+            padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem"
+          }}>
+            {createMessage}
+          </div>
+        )}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", maxWidth: "400px" }}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc" }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc" }}
+          />
+          <select
+            value={newRole}
+            onChange={(e) => setNewRole(e.target.value)}
+            style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc" }}
+          >
+            <option value="Trainer">Trainer</option>
+            <option value="Administrator">Administrator</option>
+          </select>
+          <button
+            onClick={handleCreateUser}
+            style={{
+              background: "#cc0000", color: "white", border: "none",
+              padding: "8px 16px", borderRadius: "4px", cursor: "pointer",
+              fontWeight: "bold", width: "fit-content"
+            }}
+          >
+            Create User
+          </button>
+        </div>
+      </div>
+
+      {/* DELETE/UPDATE FEEDBACK MESSAGE */}
       {message && (
         <div style={{
           background: "#d4edda", color: "#155724",
@@ -81,6 +156,7 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* USER TABLE */}
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ background: "#f0f0f0", textAlign: "left" }}>
@@ -103,7 +179,7 @@ export default function AdminPage() {
                 </span>
               </td>
               <td style={td}>
-                <button 
+                <button
                   onClick={() => handleRoleToggle(u._id, u.role)}
                   style={{ marginRight: "10px", cursor: "pointer" }}
                 >
@@ -115,15 +191,15 @@ export default function AdminPage() {
                     style={{
                       background: "#cc0000", color: "white",
                       border: "none", padding: "4px 12px",
-                borderRadius: "4px", cursor: "pointer"
+                      borderRadius: "4px", cursor: "pointer"
                     }}
-            >
+                  >
                     Delete
                   </button>
                 )}
               </td>
             </tr>
-            ))}
+          ))}
         </tbody>
       </table>
     </div>
