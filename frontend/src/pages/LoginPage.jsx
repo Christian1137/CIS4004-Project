@@ -102,7 +102,7 @@ const LoginPage = () => {
         style={{ marginTop: '20px', background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
       > 
       {/*focus on design later */}
-        {isLogin ? "Don't have an account? Register here" : "Do you have an account? Login here"}
+        {isLogin ? "Don't have an account? Register here" : "Return to Login"}
       </button>
     </main>
   );

@@ -5,8 +5,8 @@ const teamSchema = new mongoose.Schema({
   teamName: { type: String, default: "My Starter Team" },
   roster: [{
     pokemonId: { type: mongoose.Schema.Types.ObjectId, ref: 'Pokemon', required: true },
-    equippedMoves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Move' }], // The user's chosen moves
-    heldItem: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' } // The 5th entity requirement
+    equippedMoves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Move' }], 
+    chosenAbility: { type: mongoose.Schema.Types.ObjectId, ref: 'Ability', required: true }
   }]
 });
 

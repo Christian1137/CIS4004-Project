@@ -7,7 +7,8 @@ const pokemonSchema = new mongoose.Schema({
   defense: { type: Number, required: true },
   type1: { type: String, required: true },
   type2: { type: String }, 
-  allowedMoves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Move' }] // Many-to-Many Relationship
+  allowedMoves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Move' }],
+  allowedAbilities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Ability' }]
 });
 
 module.exports = mongoose.model('Pokemon', pokemonSchema);

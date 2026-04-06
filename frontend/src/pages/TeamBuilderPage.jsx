@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getGen1Pokemon, getPokemonDetails } from '../services/pokeapi';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const TeamBuilderPage = () => {
-  const [team, setTeam] = useState([]); 
+  const location = useLocation(); 
+  const navigate = useNavigate();
+  const [team, setTeam] = useState(location.state?.draftedTeam || []); 
   const [pokemonList, setPokemonList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
   const [loadingPokemon, setLoadingPokemon] = useState(false);
-  
   const [hoveredPokemon, setHoveredPokemon] = useState(null); 
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
-
-  const navigate = useNavigate();
+  
+  
 
   useEffect(() => {
     const loadList = async () => {
@@ -47,6 +49,25 @@ const TeamBuilderPage = () => {
     newTeam.splice(index, 1);
     setTeam(newTeam);
   };
+  const handleRandomTeam = async () => {
+    if (pokemonList.length < 6 || loadingPokemon) return;
+    
+    // warning for replacing team
+    if (team.length > 0) {
+      const confirm = window.confirm("This will replace your current drafted team. Are you sure?");
+      if (!confirm) return;
+    }
+
+    setLoadingPokemon(true);
+    const shuffled = [...pokemonList].sort(() => 0.5 - Math.random());
+    const randomSix = shuffled.slice(0, 6);
+
+    const detailedTeam = await Promise.all(
+      randomSix.map(p => getPokemonDetails(p.name))
+    );
+    setTeam(detailedTeam.filter(p => p !== null));
+    setLoadingPokemon(false);
+  };
 
   const handleProceedToEdit = () => {
     navigate('/edit-team', { state: { draftedTeam: team } });
@@ -54,16 +75,26 @@ const TeamBuilderPage = () => {
 
   return (
     <main style={{ padding: '20px 0', margin: '0 auto', textAlign: 'center', boxSizing: 'border-box' }}>
-      <h1>1. Draft Your Team</h1>
+      <h1>Draft Your Team</h1>
       <p>Click a Pokémon to add them. Hover to see their name.</p>
 
-      <input 
-        type="text"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Filter by name (e.g. 'mew')"
-        style={{ width: '90%', maxWidth: '400px', padding: '10px', fontSize: '16px', borderRadius: '8px', border: '2px solid #007bff', marginBottom: '20px' }}
-      />
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '30px', flexWrap: 'wrap' }}>
+        <input 
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by name (e.g. 'Pikachu')"
+          style={{ width: '100%', maxWidth: '400px', padding: '12px', fontSize: '18px', borderRadius: '8px', border: '2px solid #007bff', boxSizing: 'border-box' }}
+        />
+        
+        <button 
+          onClick={handleRandomTeam}
+          disabled={loadingPokemon}
+          style={{ padding: '12px 20px', fontSize: '16px', backgroundColor: '#6f42c1', color: 'white', border: 'none', borderRadius: '8px', cursor: loadingPokemon ? 'wait' : 'pointer', fontWeight: 'bold' }}
+        >
+          Randomize Team
+        </button>
+      </div>
 
       <section style={{ backgroundColor: '#f8f9fa', border: '2px dashed #007bff', padding: '15px', borderRadius: '10px', marginBottom: '25px', width: '90%', maxWidth: '1000px', margin: '0 auto 25px auto' }}>
         <h2 style={{ margin: '0 0 10px 0' }}>Current Roster ({team.length}/6)</h2>
@@ -92,15 +123,15 @@ const TeamBuilderPage = () => {
         )}
       </section>
 
-      {/* VISUAL GRID - Perfectly Centered, Fixed Box Sizes */}
+      {/* grid for all pokemon */}
       <section 
         style={{ opacity: team.length >= 6 ? 0.5 : 1, pointerEvents: team.length >= 6 ? 'none' : 'auto', display: 'flex', justifyContent: 'center' }}
         onMouseMove={(e) => setTooltipPos({ x: e.clientX, y: e.clientY })}
       >
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, 120px)', /* THIS permanently locks the box widths so they never stretch */
-          justifyContent: 'center', /* THIS keeps the grid perfectly centered */
+          gridTemplateColumns: 'repeat(auto-fill, 120px)',
+          justifyContent: 'center', 
           gap: '15px', 
           padding: '20px', 
           width: '100%', 
@@ -147,7 +178,7 @@ const TeamBuilderPage = () => {
         </div>
       </section>
 
-      {/* The Floating Tooltip */}
+      {/* show name on hover */}
       {hoveredPokemon && (
         <div style={{
           position: 'fixed',
