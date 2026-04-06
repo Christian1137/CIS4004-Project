@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useEffect } from "react";
 
 const mockUsers = [
-  { _id: "1", username: "jordan", role: "user" },
-  { _id: "2", username: "andy", role: "user" },
-  { _id: "3", username: "christian", role: "user" },
-  { _id: "4", username: "admin", role: "admin" },
+  { _id: "1", username: "ashKetchum", role: "user" },
+  { _id: "2", username: "barry", role: "user" },
+  { _id: "3", username: "glacia", role: "user" },
+  { _id: "4", username: "hala", role: "admin" },
 ];
 
 export default function AdminPage() {
