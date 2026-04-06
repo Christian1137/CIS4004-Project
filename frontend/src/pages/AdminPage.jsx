@@ -4,7 +4,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState("");
 
-  // --- Create User state ---
+  // for user creaton
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newRole, setNewRole] = useState("Trainer");
@@ -12,12 +12,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetch('/api/admin/users')
-      .then((res) => res.json())
+       .then((res) => res.json())
       .then((data) => setUsers(data))
       .catch((err) => console.error("Could not load users:", err));
   }, []);
 
-  // --- Create ---
+ 
   const handleCreateUser = async () => {
     if (!newUsername || !newPassword) {
       setCreateMessage("Please fill in both fields.");
@@ -46,8 +46,6 @@ export default function AdminPage() {
       setCreateMessage("Something went wrong.");
     }
   };
-
-  // --- Delete ---
   const handleDelete = async (userId, username) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${username}"?`
@@ -58,7 +56,7 @@ export default function AdminPage() {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
       });
-
+//Remove the user from the local state list
       if (response.ok) {
         setUsers(users.filter((u) => u._id !== userId));
         setMessage(`User "${username}" deleted.`);
@@ -70,7 +68,6 @@ export default function AdminPage() {
     }
   };
 
-  // --- Update (toggle role) ---
   const handleRoleToggle = async (userId, currentRole) => {
     const newRole = currentRole === "Administrator" ? "Trainer" : "Administrator";
     try {
@@ -93,7 +90,7 @@ export default function AdminPage() {
       <h2>Admin Dashboard</h2>
       <p style={{ color: "gray" }}>Manage all registered users below.</p>
 
-      {/* CREATE USER SECTION */}
+      {/* create sec */}
       <div style={{
         background: "#f9f9f9", border: "1px solid #ddd",
         borderRadius: "8px", padding: "1.5rem", marginBottom: "2rem"
@@ -145,7 +142,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* DELETE/UPDATE FEEDBACK MESSAGE */}
+      {/* for updaye message*/}
       {message && (
         <div style={{
           background: "#d4edda", color: "#155724",
@@ -156,7 +153,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* USER TABLE */}
+      {/* user table*/}
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ background: "#f0f0f0", textAlign: "left" }}>
