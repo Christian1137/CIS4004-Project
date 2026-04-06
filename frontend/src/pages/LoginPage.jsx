@@ -37,7 +37,7 @@ const LoginPage = () => {
           login({ username: username, role: userType });
           alert("Account created and logged in!");
         }
-        navigate('/team'); 
+        navigate('/team-build'); 
       } else {
         alert(data.message || "Something went wrong");
       }

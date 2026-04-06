@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import TeamBuilderPage from "./pages/TeamBuilderPage";
 import TeamEditorPage from "./pages/TeamEditorPage";
 import AdminPage from "./pages/AdminPage";
+import ViewTeamPage from './pages/ViewTeamPage';
 
 export default function App() {
   return (
@@ -15,7 +16,7 @@ export default function App() {
      <Routes>
           <Route path="/" element={<LoginPage />} />
 
-    <Route path="/team" element={
+    <Route path="/team-build" element={
             <ProtectedRoute><TeamBuilderPage /></ProtectedRoute>
           } />
 
@@ -25,6 +26,9 @@ export default function App() {
      <Route path="/admin" element={
             <ProtectedRoute adminOnly={true}><AdminPage /></ProtectedRoute>
           } />
+          <Route path="/view-team" element={
+             <ProtectedRoute><ViewTeamPage /></ProtectedRoute>
+            } />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

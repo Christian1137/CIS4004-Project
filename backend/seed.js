@@ -77,6 +77,9 @@ const seedDatabase = async () => {
         hp: pData.stats.find(s => s.stat.name === 'hp').base_stat,
         attack: pData.stats.find(s => s.stat.name === 'attack').base_stat,
         defense: pData.stats.find(s => s.stat.name === 'defense').base_stat,
+        specialAttack: pData.stats.find(s => s.stat.name === 'special-attack').base_stat,
+        specialDefense: pData.stats.find(s => s.stat.name === 'special-defense').base_stat,
+        speed: pData.stats.find(s => s.stat.name === 'speed').base_stat,
         type1: pData.types[0].type.name,
         type2: pData.types[1] ? pData.types[1].type.name : null,
         allowedMoves: moveIds,
@@ -97,7 +100,7 @@ const seedDatabase = async () => {
     const mockUser3 = await User.create({
       username: 'admin', password: 'password123', role: 'Administrator'
     });
-    
+
     console.log("Mock Users created.");
 
     // simple mock team

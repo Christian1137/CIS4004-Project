@@ -17,7 +17,8 @@ export default function Navbar() {
 
       {user && (
         <>
-          <Link to="/team" style={{ color: "white" }}>My Team</Link>
+          <Link to="/team-build" style={{ color: "white" }}>Build Team</Link>
+          <Link to="/view-team" style={{ color: "white" }}>View My Team</Link>
           {user.role === "Administrator" && (
             <Link to="/admin" style={{ color: "white" }}>Admin</Link>
           )}
