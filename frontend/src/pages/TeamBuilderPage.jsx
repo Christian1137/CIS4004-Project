@@ -70,7 +70,13 @@ const TeamBuilderPage = () => {
   };
 
   const handleProceedToEdit = () => {
-    navigate('/edit-team', { state: { draftedTeam: team } });
+    navigate('/edit-team', { 
+      state: { 
+        draftedTeam: team,
+        teamName: location.state?.teamName || "",
+        teamId: location.state?.teamId
+      } 
+    });
   };
 
   return (

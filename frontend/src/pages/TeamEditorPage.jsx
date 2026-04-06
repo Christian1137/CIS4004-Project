@@ -9,6 +9,7 @@ const TeamEditorPage = () => {
   
   // Grab the teamName from the previous page, or default it
   const [teamName, setTeamName] = useState(location.state?.teamName || "");
+  const teamId = location.state?.teamId;
 
   if (team.length === 0) {
     return (
@@ -100,9 +101,12 @@ const TeamEditorPage = () => {
         };
       }));
 
-      
-      const response = await fetch('/api/team', {
-        method: 'POST',
+
+      const url = teamId ? `/api/team/update/${teamId}` : '/api/team';
+      const method = teamId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: loggedInUserId, 

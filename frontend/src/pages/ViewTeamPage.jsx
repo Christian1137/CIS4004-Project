@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getPokemonDetails } from '../services/pokeapi';
 
 const ViewTeamPage = () => {
   // NEW: Store ALL teams, and track which one is currently selected
@@ -9,6 +10,7 @@ const ViewTeamPage = () => {
 
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const navigate = useNavigate();
 
@@ -52,6 +54,28 @@ const ViewTeamPage = () => {
 
   const currentTeam = allTeams[activeTeamIndex];
 
+  const handleEditTeam = async () => {
+    setIsEditing(true);
+    try {
+      const reconstructedTeam = await Promise.all(
+        currentTeam.roster.map(async (member) => {
+          const details = await getPokemonDetails(member.pokemonId.name);
+          details.selectedAbility = member.chosenAbility.name;
+          details.selectedMoves = member.equippedMoves.map(m => m.name);
+          while(details.selectedMoves.length < 4) details.selectedMoves.push("");
+          return details;
+        })
+      );
+      navigate('/team-build', { 
+        state: { draftedTeam: reconstructedTeam, teamName: currentTeam.teamName, teamId: currentTeam._id } 
+      });
+    } catch (err) {
+      console.error("Error reconstructing team", err);
+      alert("Failed to load team for editing.");
+    }
+    setIsEditing(false);
+  };
+
   return (
     <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', boxSizing: 'border-box' }}>
 
@@ -89,6 +113,13 @@ const ViewTeamPage = () => {
           style={{ background: '#dc3545', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
         >
           Delete This Team
+        </button>
+        <button 
+          onClick={handleEditTeam}
+          disabled={isEditing}
+          style={{ background: '#ffc107', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: isEditing ? 'wait' : 'pointer', fontWeight: 'bold', marginLeft: '10px' }}
+        >
+          {isEditing ? 'Loading Editor...' : 'Edit This Team'}
         </button>
       </div>
 
