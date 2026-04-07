@@ -6,13 +6,15 @@ const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('Trainer'); // either Administrator or Trainer
+  const [userType, setUserType] = useState('Trainer'); 
+  const [error, setError] = useState('');
 
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
     const payload = isLogin
       ? { username, password }
@@ -38,80 +40,128 @@ const LoginPage = () => {
 
         // Pass the full data to your AuthContext just in case it needs it
         login({ userId: data.userId, username: data.username, role: data.role });
-
-        if (isLogin) {
-          alert(`Welcome back, ${data.username}!`);
-        } else {
-          alert("Account created and logged in!");
-        }
         navigate('/team-build');
       } else {
-        alert(data.message || "Something went wrong");
+        setError(data.message || "Access denied. Check your credentials.");
       }
     } catch (err) {
-      console.error("Connection error:", err);
-      alert("Could not connect to the server.");
+      setError("Unable to connect to the PokéCenter server.");
     }
   };
 
   return (
-    <main style={{ maxWidth: '400px', margin: '50px auto', textAlign: 'center' }}>
-      <h1>{isLogin ? 'Login' : 'Create Account'}</h1>
-
-      <form onSubmit={handleSubmit} aria-label={isLogin ? 'Login Form' : 'Registration Form'}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="username" style={{ display: 'block' }}>Username</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
+    <div style={containerStyle}>
+      <div style={cardStyle}>
+        <div style={welcomeHeaderStyle}>
+          <h1 style={titleStyle}>{isLogin ? 'Welcome Back' : 'Register'}</h1>
+          <p style={subtitleStyle}>
+            {isLogin 
+              ? 'Access the Pokémon Team Builder portal.' 
+              : 'Create your trainer ID to start drafting.'}
+          </p>
         </div>
+        
+        {error && <div style={errorBoxStyle}>{error}</div>}
 
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="password" style={{ display: 'block' }}>Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-
-        {/* user selection */}
-        {!isLogin && (
-          <div style={{ marginBottom: '12px' }}>
-            <label htmlFor="userType" style={{ display: 'block' }}>Account Type</label>
-            <select
-              id="userType"
-              value={userType}
-              onChange={(e) => setUserType(e.target.value)}
-              style={{ width: '100%', padding: '8px' }}
-            >
-              <option value="Trainer">Trainer</option>
-              <option value="Administrator">Administrator</option>
-            </select>
+        <form onSubmit={handleSubmit} style={formStyle}>
+          <div style={inputGroupStyle}>
+            <label style={labelStyle}>Trainer ID</label>
+            <input 
+              type="text" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+              required 
+              style={inputStyle}
+              placeholder="Username"
+            />
           </div>
-        )}
 
-        <button type="submit" style={{ width: '100%', padding: '10px', cursor: 'pointer' }}>
-          {isLogin ? 'Login' : 'Register'}
+          <div style={inputGroupStyle}>
+            <label style={labelStyle}>Access Code</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              style={inputStyle}
+              placeholder="Password"
+            />
+          </div>
+
+          {!isLogin && (
+            <div style={inputGroupStyle}>
+              <label style={labelStyle}>Role</label>
+              <select 
+                value={userType} 
+                onChange={(e) => setUserType(e.target.value)}
+                style={selectStyle}
+              >
+                <option value="Trainer">Standard Trainer</option>
+                <option value="Administrator">Administrator</option>
+              </select>
+            </div>
+          )}
+
+          <button type="submit" style={submitButtonStyle}>
+            {isLogin ? 'Login' : 'REGISTER TRAINER'}
+          </button>
+        </form>
+
+        <button 
+          onClick={() => {setIsLogin(!isLogin); setError('');}} 
+          style={toggleButtonStyle}
+        >
+          {isLogin ? "New Trainer? Register here" : "Already registered? Log in here"}
         </button>
-      </form>
-
-      <button
-        onClick={() => setIsLogin(!isLogin)}
-        style={{ marginTop: '20px', background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
-      >
-        {isLogin ? "Don't have an account? Register here" : "Return to Login"}
-      </button>
-    </main>
+      </div>
+    </div>
   );
+};
+
+const containerStyle = {
+  display: 'flex', justifyContent: 'center', alignItems: 'center',
+  minHeight: '100vh', backgroundColor: '#0f0f12', margin: 0
+};
+
+const cardStyle = {
+  width: '100%', maxWidth: '400px', padding: '40px',
+  backgroundColor: '#1c1c21', borderRadius: '16px',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #2d2d35',
+  textAlign: 'center'
+};
+
+const welcomeHeaderStyle = { marginBottom: '30px' };
+const titleStyle = { color: '#ffffff', fontSize: '28px', fontWeight: 'bold', margin: '0 0 8px 0' };
+const subtitleStyle = { color: '#8e8e9a', fontSize: '15px', margin: 0 };
+
+const formStyle = { display: 'flex', flexDirection: 'column', gap: '20px' };
+const inputGroupStyle = { textAlign: 'left' };
+const labelStyle = { display: 'block', color: '#b5b5be', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase' };
+
+const inputStyle = {
+  width: '100%', padding: '12px', borderRadius: '8px',
+  border: '1px solid #32323d', backgroundColor: '#25252e',
+  color: '#ffffff', fontSize: '16px', boxSizing: 'border-box'
+};
+
+const selectStyle = { ...inputStyle, cursor: 'pointer' };
+
+const submitButtonStyle = {
+  width: '100%', padding: '14px', marginTop: '10px',
+  borderRadius: '8px', border: 'none', backgroundColor: '#cc0000', // Pokedex Red
+  color: '#ffffff', fontSize: '16px', fontWeight: 'bold',
+  cursor: 'pointer', transition: 'background 0.2s'
+};
+
+const errorBoxStyle = {
+  color: '#ff6b6b', backgroundColor: 'rgba(255, 107, 107, 0.1)',
+  padding: '12px', borderRadius: '8px', marginBottom: '20px',
+  fontSize: '14px', border: '1px solid rgba(255, 107, 107, 0.2)'
+};
+
+const toggleButtonStyle = {
+  background: 'none', border: 'none', color: '#3d8bff',
+  marginTop: '25px', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline'
 };
 
 export default LoginPage;
