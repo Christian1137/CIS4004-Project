@@ -223,7 +223,6 @@ export default function Profile() {
 
       {/* DELETE SECTION */}
       <div style={{ textAlign: "center" }}>
-        <h3 style={{ color: "#cc0000", fontSize: "1.1rem" }}>Danger Zone</h3>
         <button onClick={handleDeleteAccount} style={{
           width: "100%", padding: "10px", backgroundColor: "transparent",
           color: "#cc0000", border: "2px solid #cc0000", borderRadius: "5px",
