@@ -264,3 +264,59 @@ app.delete('/api/users/:id', async (req, res) => {
     res.status(400).json({ message: "Deletion failed" });
   }
 });
+
+// Analyze team weaknesses
+app.get('/api/team/analyze/:id', async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id).populate('roster.pokemonId');
+    if (!team) return res.status(404).json({ message: "Team not found" });
+
+    const typeChart = {
+      water: ["grass", "electric"],
+      fire: ["water", "ground", "rock"],
+      grass: ["fire", "ice", "poison", "flying", "bug"],
+      electric: ["ground"],
+      psychic: ["bug", "ghost", "dark"],
+      ice: ["fire", "fighting", "rock", "steel"],
+      dragon: ["ice", "dragon", "fairy"],
+      fighting: ["flying", "psychic", "fairy"],
+      flying: ["electric", "ice", "rock"],
+      poison: ["ground", "psychic"],
+      ground: ["water", "grass", "ice"],
+      rock: ["water", "grass", "fighting", "ground", "steel"],
+      bug: ["fire", "flying", "rock"],
+      ghost: ["ghost", "dark"],
+      steel: ["fire", "fighting", "ground"],
+      normal: ["fighting"],
+      fairy: ["poison", "steel"]
+    };
+
+    let totalWeaknesses = {};
+
+    team.roster.forEach(slot => {
+      const p = slot.pokemonId;
+      if (p) {
+        const types = [p.type1, p.type2].filter(t => t); 
+        types.forEach(type => {
+          const weaknesses = typeChart[type.toLowerCase()] || [];
+          weaknesses.forEach(w => {
+            totalWeaknesses[w] = (totalWeaknesses[w] || 0) + 1;
+          });
+        });
+      }
+    });
+
+    const criticalWeaknesses = Object.keys(totalWeaknesses)
+      .filter(type => totalWeaknesses[type] >= 2)
+      .map(type => ({ type, count: totalWeaknesses[type] }))
+      .sort((a, b) => b.count - a.count);
+    res.json({
+      teamName: team.teamName,
+      criticalWeaknesses,
+      totalStats: totalWeaknesses
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Analysis failed", error: err.message });
+  }
+});
+

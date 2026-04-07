@@ -12,6 +12,9 @@ const ViewTeamPage = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
+  const [analysis, setAnalysis] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,6 +79,18 @@ const ViewTeamPage = () => {
     setIsEditing(false);
   };
 
+  const handleAnalyze = async () => {
+    setIsAnalyzing(true);
+    try {
+      const response = await axios.get(`/api/team/analyze/${currentTeam._id}`);
+      setAnalysis(response.data);
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      alert("Could not analyze team at this time.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+};
   return (
     <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', boxSizing: 'border-box' }}>
 
@@ -121,12 +136,67 @@ const ViewTeamPage = () => {
         >
           {isEditing ? 'Loading Editor...' : 'Edit This Team'}
         </button>
+
+        <button 
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            style={{ 
+              background: '#6f42c1', 
+              color: 'white', 
+              border: 'none', 
+              padding: '10px 20px', 
+              borderRadius: '5px', 
+              cursor: isAnalyzing ? 'wait' : 'pointer', 
+              fontWeight: 'bold', 
+              marginLeft: '10px' 
+            }}
+        >
+            {isAnalyzing ? 'Analyzing...' : 'Analyze Team Weaknesses'}
+      </button>
+
       </div>
 
       <h1 style={{ textAlign: 'center', textTransform: 'capitalize', fontSize: '36px', marginBottom: '40px' }}>
         {currentTeam.teamName}
       </h1>
-
+      
+    {analysis && (
+      <div style={{ 
+        backgroundColor: '#f8d7da', 
+        color: '#721c24', 
+        padding: '20px', 
+        borderRadius: '10px', 
+        marginBottom: '30px',
+        border: '1px solid #f5c6cb'
+      }}>
+        <h2 style={{ marginTop: 0, color: '#dd1529' }}>⚠️ Critical Team Weaknesses</h2>
+        <p>The following types deal 2x damage to multiple members of your team:</p>
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {analysis.criticalWeaknesses.length > 0 ? (
+            analysis.criticalWeaknesses.map((w, i) => (
+              <span key={i} style={{ 
+                background: '#fff', 
+                padding: '5px 15px', 
+                borderRadius: '20px', 
+                fontWeight: 'bold',
+                textTransform: 'capitalize',
+                border: '2px solid #721c24'
+              }}>
+                {w.type} ({w.count})
+              </span>
+            ))
+          ) : (
+            <span style={{ color: '#155724' }}>✅ No major common weaknesses found!</span>
+          )}
+        </div>
+        <button 
+          onClick={() => setAnalysis(null)}
+          style={{ marginTop: '15px', background: 'none', border: 'none', color: '#721c24', textDecoration: 'underline', cursor: 'pointer' }}
+        >
+          Clear Analysis
+        </button>
+      </div>
+      )}
       {/* team grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '40px', width: '100%' }}>
         {currentTeam.roster.map((member, index) => (
