@@ -200,3 +200,67 @@ app.delete('/api/admin/users/:id', async (req, res) => {
     res.status(400).json({ message: "Deletion failed" });
   }
 });
+
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const { username, oldPassword, newPassword } = req.body;
+    // debuggin rn
+    console.log("--- Profile Update Request ---");
+    console.log("User ID:", req.params.id);
+    console.log("Attempting to update Username:", username || "No");
+    console.log("Attempting to update Password:", newPassword ? "Yes" : "No");
+
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // change password
+    if (newPassword) {
+      console.log(`Checking password... Database has: '${targetUser.password}', User typed: '${oldPassword}'`);
+      
+      if (targetUser.password !== oldPassword) {
+        console.log("Password check FAILED!");
+        return res.status(401).json({ message: "Incorrect current password." });
+      }
+      
+      console.log("Password check PASSED! Updating password...");
+      targetUser.password = newPassword;
+    }
+
+    if (username) {
+      targetUser.username = username;
+    }
+    await targetUser.save();
+    console.log("Database saved successfully.");
+
+    res.json({ message: "Profile updated successfully", user: targetUser });
+  } catch (err) {
+    console.error("Profile Update Error:", err);
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "Username already exists. Please choose another." });
+    }
+    res.status(400).json({ message: "Failed to update profile" });
+  }
+});
+
+// delete user account
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // delete user
+    const deletedUser = await User.findByIdAndDelete(userId);
+    
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // delete teams
+    await Team.deleteMany({ userId: userId });
+
+    res.status(200).json({ message: "Account and associated teams deleted successfully" });
+  } catch (err) {
+    console.error("Account Deletion Error:", err);
+    res.status(400).json({ message: "Deletion failed" });
+  }
+});

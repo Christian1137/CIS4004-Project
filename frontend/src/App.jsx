@@ -7,7 +7,7 @@ import TeamBuilderPage from "./pages/TeamBuilderPage";
 import TeamEditorPage from "./pages/TeamEditorPage";
 import AdminPage from "./pages/AdminPage";
 import ViewTeamPage from './pages/ViewTeamPage';
-
+import ProfilePage from "./pages/ProfilePage";
 export default function App() {
   return (
     <AuthProvider>
@@ -16,10 +16,12 @@ export default function App() {
      <Routes>
           <Route path="/" element={<LoginPage />} />
 
-    <Route path="/team-build" element={
+      <Route path="/team-build" element={
             <ProtectedRoute><TeamBuilderPage /></ProtectedRoute>
           } />
-
+      <Route path="/profile" element={
+            <ProtectedRoute><ProfilePage /></ProtectedRoute>
+          } />
           <Route path="/edit-team" element={
             <ProtectedRoute><TeamEditorPage /></ProtectedRoute>
           } />

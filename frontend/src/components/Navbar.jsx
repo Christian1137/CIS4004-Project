@@ -10,6 +10,20 @@ export default function Navbar() {
     navigate("/");
   };
 
+  // Common style for the new navigation buttons
+  const navButtonStyle = {
+    cursor: "pointer",
+    background: "#fff",
+    color: "#cc0000",
+    border: "none",
+    padding: "8px 15px",
+    borderRadius: "20px",
+    fontWeight: "bold",
+    textDecoration: "none", // Removes underline from Link
+    fontSize: "0.9rem",
+    display: "inline-block"
+  };
+
   return (
     <nav style={{
       padding: "1rem 2rem",
@@ -17,22 +31,20 @@ export default function Navbar() {
       color: "white",
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-between", // Spreads the left and right sides
+      justifyContent: "space-between",
       boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-      position: "relative" // Required for the absolute centering below!
+      position: "relative"
     }}>
 
-      {/* LEFT SIDE: App Title */}
       <span style={{ fontWeight: "bold", fontSize: "1.2rem" }}>
         Pokémon Team Builder
       </span>
 
-      {/* CENTER SIDE: Perfectly centered welcome message */}
       {user && (
         <span style={{
           position: "absolute",
           left: "50%",
-          transform: "translateX(-50%)", // Pulls it back exactly halfway to center it
+          transform: "translateX(-50%)",
           fontWeight: "bold",
           fontSize: "1.3rem"
         }}>
@@ -40,56 +52,42 @@ export default function Navbar() {
         </span>
       )}
 
-      {/* RIGHT SIDE: Navigation Links & Logout */}
-      <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+      {/* nav buttons*/}
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
         {user && (
           <>
-            <Link to="/team-build" style={{ color: "white", textDecoration: "none", fontWeight: "500" }}>Build Team</Link>
-            <Link to="/view-team" style={{ color: "white", textDecoration: "none", fontWeight: "500" }}>View My Team</Link>
-
+          {/* special admin button */}
             {user.role === "Administrator" && (
-              <Link to="/admin" style={{ color: "white", textDecoration: "none", fontWeight: "bold", background: "#ff4d4d", padding: "5px 10px", borderRadius: "5px" }}>
+              <Link to="/admin" style={{ 
+                color: "white", 
+                textDecoration: "none", 
+                fontWeight: "bold", 
+                background: "#ff4d4d", 
+                padding: "5px 10px", 
+                borderRadius: "5px" 
+              }}>
                 Admin
               </Link>
             )}
+            {/* Draft Button */}
+            <Link to="/team-build" style={navButtonStyle}>
+              Draft
+            </Link>
 
-            {user.role !== "Administrator" && (
-              <button
-                onClick={async () => {
-                  if (window.confirm("WARNING: This will permanently delete your account and all your teams. Are you sure?")) {
-                    try {
-                      await fetch(`/api/admin/users/${user.userId}`, { method: 'DELETE' });
-                      logout();
-                    } catch (err) {
-                      console.error("Failed to delete account", err);
-                    }
-                  }
-                }}
-                style={{
-                  cursor: "pointer",
-                  background: "#dc3545",
-                  color: "white",
-                  border: "none",
-                  padding: "8px 15px",
-                  borderRadius: "20px",
-                  fontWeight: "bold"
-                }}
-              >
-                Delete My Account
-              </button>
-            )}
+            {/* My Team Button */}
+            <Link to="/view-team" style={navButtonStyle}>
+              My Team
+            </Link>
 
+            {/* Profile Button */}
+            <Link to="/profile" style={navButtonStyle}>
+              Profile
+            </Link>
+
+            {/* Logout Button */}
             <button
               onClick={handleLogout}
-              style={{
-                cursor: "pointer",
-                background: "#fff",
-                color: "#cc0000",
-                border: "none",
-                padding: "8px 15px",
-                borderRadius: "20px",
-                fontWeight: "bold"
-              }}
+              style={navButtonStyle}
             >
               Logout
             </button>
