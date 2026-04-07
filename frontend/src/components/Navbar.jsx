@@ -26,17 +26,19 @@ export default function Navbar() {
 
   return (
     <nav style={{
-      padding: "1rem 2rem",
+      padding: "0.75rem clamp(0.75rem, 2vw, 2rem)",
       background: "#cc0000",
       color: "white",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
+      flexWrap: "wrap",
+      gap: "0.5rem",
       boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
       position: "relative"
     }}>
 
-      <span style={{ fontWeight: "bold", fontSize: "1.2rem" }}>
+      <span style={{ fontWeight: "bold", fontSize: "clamp(0.9rem, 2.5vw, 1.2rem)", lineHeight: "1.3", wordWrap: "break-word", flexShrink: 0 }}>
         Pokémon Team Builder
       </span>
 
@@ -46,14 +48,20 @@ export default function Navbar() {
           left: "50%",
           transform: "translateX(-50%)",
           fontWeight: "bold",
-          fontSize: "1.3rem"
+          fontSize: "clamp(0.75rem, 2vw, 1.3rem)",
+          lineHeight: "1.3",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+          maxWidth: "40%",
+          overflow: "hidden",
+          textOverflow: "ellipsis"
         }}>
           Welcome {user.username}!
         </span>
       )}
 
       {/* nav buttons*/}
-      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: "clamp(0.4rem, 1vw, 1rem)", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
         {user && (
           <>
           {/* special admin button */}
